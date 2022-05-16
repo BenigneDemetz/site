@@ -29,8 +29,6 @@
     <script type="text/javascript">
 
         function updateFile(event) {
-            console.log("caca");
-            console.log(event["target"]["files"][0]["name"]);
             document.getElementById("filename").value = event["target"]["files"][0]["name"];
         }
 
