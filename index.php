@@ -27,13 +27,20 @@
     <title>Benigne</title>
     <!--<script type="text/javascript" src="myscript.js"></script>-->
     <script type="text/javascript">
-        $("#file").change(function(){
+
+        function updateFile(event) {
             console.log("caca");
-        });
+            console.log(event["target"]["files"][0]["name"]);
+            document.getElementById("filename").value = event["target"]["files"][0]["name"];
+        }
+
+
+
     </script>
     <!--<link rel="stylesheet" href="css.css">-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="bootstrap.css">
+<!--    <link rel="icon" type="image/png" href="logo.png" />-->
     <style>
         :root {
             --bg-color: #060615;
@@ -169,10 +176,10 @@
 
 
         <div class="file-input">
-            <input type="file" name="filetoup" id="file" class="file" required>
+            <input type="file" name="filetoup" id="file" class="file" required onchange="updateFile(event)">
             <label for="file">Select file</label>
-            <span class ="text-upload">Nom du fichier :</span>
-            <input type="text" name="name" class="custom-file-input" required>
+            <span class ="text-upload" >Nom du fichier :</span>
+            <input type="text" name="name" class="custom-file-input" id="filename" required>
         </div>
 
 
