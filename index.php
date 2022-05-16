@@ -125,7 +125,7 @@
     <label style="margin-left: 1em"><?php
         if (isset($_SESSION['pseudo'])) {
             if ($_SESSION['pseudo'] != null) {
-                echo $_SESSION['pseudo'];
+                echo $_SESSION['pseudo'] . ' - ' . $_SESSION['role'];
         }
         }
         ?></label>
