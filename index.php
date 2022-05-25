@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
     <?php
 
     session_start();
@@ -11,10 +12,16 @@
         if (in_array($pseudo, array_keys($json_a))) {
             $_SESSION['pseudo'] = $pseudo;
             $_SESSION['role'] = $json_a[$pseudo]['role'];
-
-        } else {
-            echo "pas connecté";
         }
+        echo '<meta http-equiv="refresh" content="0; URL=/" />';
+    }
+
+    if (isset($_POST['filetodelete'])) {
+        echo '<script>';
+        echo 'console.log("'.$_POST['filetodelete'].'")';
+        echo '</script>';
+        unlink("./uploads/" . $_POST['filetodelete']);
+        echo '<meta http-equiv="refresh" content="0; URL=/" />';
     }
 
     if (isset($_POST['deco'])) {
@@ -28,7 +35,37 @@
     <script type="text/javascript">
 
         function updateFile(event) {
-            document.getElementById("filename").value = event["target"]["files"][0]["name"];
+            let name = event["target"]["files"][0]["name"];
+            name = name.replace(" ", "_");
+            document.getElementById("filename").value = name;
+        }
+
+        function onload() {
+            let popup = document.getElementById("connectionPopup");
+            if (popup == null)
+                return;
+            popup.style.display = 'none';
+        }
+
+        function openConnectionMenu() {
+            let popup = document.getElementById("connectionPopup");
+            if (popup.style.display == 'none') {
+                window.console.log("caca");
+                popup.style.display = 'block';
+                document.getElementById("cross").style.display = "block";
+                document.getElementById("profile").style.display = "none";
+            }
+            else {
+                popup.style.display = 'none';
+                document.getElementById("cross").style.display = "none";
+                document.getElementById("profile").style.display = "block";
+            }
+        }
+
+        function checkSelection(e) {
+            let option = document.getElementById("filetodelete");
+            if (option.options[option.selectedIndex].value == "none")
+                e.preventDefault();
         }
 
 
@@ -36,6 +73,8 @@
     <!--<link rel="stylesheet" href="css.css">-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="bootstrap.css">
+    <link href='https://css.gg/profile.css' rel='stylesheet'>
+    <link href='https://css.gg/math-plus.css' rel='stylesheet'>
     <!--    <link rel="icon" type="image/png" href="logo.png" />-->
     <style>
         :root {
@@ -63,7 +102,8 @@
 
 
         input[type="text"] {
-            border-color: #4b4b4b;
+            border-color: #afafaf;
+            border-radius: 0.25em;
             border-width: 1px;
             width: available;
             background: var(--bg-color);
@@ -154,13 +194,53 @@
 
         }
 
+        #connectionPopup {
+            display: none;
+            background-color: rgba(122, 122, 122,1);
+            width: 15em;
+            height: 6em;
+            border-radius: 1em;
+            position: absolute;
+            left: 2em;
+            top: 3.3em;
+            margin-bottom: 1em;
+        }
+
+        #connectioninput {
+            background-color: var(--navbar-color);
+        }
+        select {
+            width: 15em;
+        }
+
 
     </style>
 </head>
 
-<body>
+<body onload="onload();">
 <div class="navbar">
-    <label style="margin-left: 1em"><?php
+
+    <?php
+    if (!isset($_SESSION['pseudo']) or $_SESSION['pseudo'] == null) {
+    ?>
+    <span class="gg-profile" id="profile" style="margin-left: 1.4em; transform: scale(1.8); cursor: pointer" onclick="openConnectionMenu();"></span>
+    <img src="cross.png" id="cross" style="padding-bottom: 3em; padding-top:2.5em; padding-left: 0.5em; transform: rotate(45deg); width: 3.6em;
+    position: absolute; display: none; cursor: pointer" onclick="openConnectionMenu()">
+    <div id="connectionPopup">
+
+        <form action="/" method="post" class="searchandupload" style="padding-left: 1.625em;">
+            <span>Se connecter :</span>
+            <div ><input id="connectioninput" type="text" name="pseudo" ></div>
+            <input type="submit" value="connect" style="background: linear-gradient( <?php echo random_int(0, 360) ?> deg, var(--button-color1), var(--button-color2));">
+        </form>
+        <?php
+        }
+        ?>
+    </div>
+
+    <label style="margin-left: 1em;
+    position: absolute;
+    padding-top: 0.75em;"><?php
         if (isset($_SESSION['pseudo'])) {
             if ($_SESSION['pseudo'] != null) {
                 echo $_SESSION['pseudo'] . ' - ' . $_SESSION['role'];
@@ -178,7 +258,7 @@
             $string = file_get_contents("profiles.json");
             $json_a = json_decode($string, true);
             echo '
-                    <form action="index.php" method="post" class="searchandupload" style="position: absolute; right: 5em">
+                    <form action="index.php" method="post" class="searchandupload" style="position: absolute; right: 5em; padding-top: 0.65em;">
                         <input type="submit" value="Se déconnecter" style="background: linear-gradient(' . random_int(0, 360) . 'deg, var(--button-color1), var(--button-color2));" name="deco">
                     </form>';
         }
@@ -199,13 +279,24 @@
                        style="background: linear-gradient(<?php echo random_int(0, 360) ?>deg, var(--button-color1), var(--button-color2));">
             </form>
             <?php
-            if (!isset($_SESSION['pseudo']) or $_SESSION['pseudo'] == null) {
-                echo '
-        <form action="index.php" method="post" class="searchandupload" style="position: absolute; right: 1em">
-            <span>Se connecter :</span>
-            <div class="inputtext"><input type="text" name="pseudo" placeholder="sabri"></div>
-            <input type="submit" value="connect" style="background: linear-gradient(' . random_int(0, 360) . 'deg, var(--button-color1), var(--button-color2));">
-        </form>';
+            if (isset($_SESSION) and $_SESSION['role'] == "admin") {
+            ?>
+            <form action="/" method="post" style="position: absolute; right: 1em" onsubmit="checkSelection(event)">
+                <select name="filetodelete" id="filetodelete">
+                    <option style="width: min-content" value="none">Selectionner un fichier</option>
+                    <?php
+                    $files = scandir('./uploads/');
+                    foreach ($files as $file) {
+                        if ($file == "." or $file == "..") {
+                            continue;
+                        }
+                        echo '<option value="' . $file .'">' . $file . '</option>';
+                    }
+                    ?>
+                </select>
+                <input type="submit" value="Supprimer" style="background: linear-gradient(<?php echo random_int(0, 360) ?>deg, var(--button-color1), var(--button-color2));">
+            </form>
+            <?php
             }
             ?>
         </div>
@@ -245,6 +336,7 @@
                    style="background: linear-gradient(<?php echo random_int(0, 360) ?>deg, var(--button-color1), var(--button-color2));">
 
         </form>
+
         <br>
     </div>
 
@@ -287,15 +379,7 @@
 
         }
 
-        if (isset($_SESSION['pseudo'])) {
-            if ($_SESSION['pseudo'] != null) {
-                if ($_SESSION['pseudo']) {
-                    echo "Je n'ai commencé à faire que site qu'il n'y a qu'une ou deux semaine pour partager des fichiers avec des amis.
-                Il me permet juste de vous montrer que j'aime développer lorsque j'ai un but derriere et pas developper betement comme à l'iut.
-                Je continue de le modifier au fil du temps. Je n'ai fais le formulaire de connection que ce week-end.";
-                }
-            }
-        } else {
+
             $files = scandir('./uploads/');
             foreach ($files as $file) {
                 if ($file == "." or $file == "..") {
@@ -303,7 +387,6 @@
                 }
                 echo '<a href=uploads/' . $file . ' target=”_blank” style="overflow: hidden; text-overflow-start: clip; text-overflow-middle: ellipsis; text-overflow-end: clip; text-overflow-min-width: 0 3ch;">' . $file . '</a>';
             }
-        }
 
         ?>
     </div>
